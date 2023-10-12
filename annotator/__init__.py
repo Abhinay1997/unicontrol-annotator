@@ -113,7 +113,7 @@ color_dict = {
 }
 
 # task = 'canny'
-def process_canny(img, resolution, low_threshold = 20, high_threshold = 200, num_images_per_prompt = 1):
+def process_canny(img, resolution, low_threshold = 40, high_threshold = 200, num_images_per_prompt = 1):
     img = resize_image(HWC3(img), resolution)
     H, W, C = img.shape
 
@@ -125,7 +125,7 @@ def process_canny(img, resolution, low_threshold = 20, high_threshold = 200, num
     control = einops.rearrange(control, 'b h w c -> b c h w').clone()
 
 # task = 'hed'
-def process_hed(input_image, img_resolution, hed_resolution, num_images_per_prompt = 1):
+def process_hed(input_image, img_resolution = 512, hed_resolution = 512, num_images_per_prompt = 1):
     input_image = HWC3(input_image)
     img = resize_image(input_image, img_resolution)
     H, W, C = img.shape
@@ -140,7 +140,7 @@ def process_hed(input_image, img_resolution, hed_resolution, num_images_per_prom
     return control
 
 #task = 'hedsketch'
-def process_sketch(input_image, img_resolution, detect_resolution, num_images_per_prompt=1):
+def process_sketch(input_image, img_resolution = 512, detect_resolution = 512, num_images_per_prompt=1):
     input_image = HWC3(input_image)
     img = resize_image(input_image, img_resolution)
     H, W, C = img.shape
@@ -175,7 +175,7 @@ def process_sketch(input_image, img_resolution, detect_resolution, num_images_pe
     return control
 
 # task = 'depth'
-def process_depth(input_image, img_resolution, detect_resolution, num_images_per_prompt=1):
+def process_depth(input_image, img_resolution = 512, detect_resolution = 384, num_images_per_prompt=1):
     input_image = HWC3(input_image)
     img = resize_image(input_image, img_resolution)
     H, W, C = img.shape
@@ -191,7 +191,7 @@ def process_depth(input_image, img_resolution, detect_resolution, num_images_per
     return control
 
 # task = 'normal'
-def process_normal(input_image, img_resolution, detect_resolution, num_images_per_prompt=1):
+def process_normal(input_image, img_resolution = 512, detect_resolution = 384, num_images_per_prompt=1):
     input_image = HWC3(input_image)
     img = resize_image(input_image, img_resolution)
     H, W, C = img.shape
@@ -207,7 +207,7 @@ def process_normal(input_image, img_resolution, detect_resolution, num_images_pe
     return control
 
 # task = 'openpose'
-def process_pose(input_image, img_resolution, detect_resolution, num_images_per_prompt=1):
+def process_pose(input_image, img_resolution = 512, detect_resolution = 512, num_images_per_prompt=1):
     input_image = HWC3(input_image)
     img = resize_image(input_image, img_resolution)
     H, W, C = img.shape
@@ -223,7 +223,7 @@ def process_pose(input_image, img_resolution, detect_resolution, num_images_per_
     return control
 
 # task = 'seg'
-def process_segmentation(input_image, img_resolution, detect_resolution, num_images_per_prompt=1):
+def process_segmentation(input_image, img_resolution = 512, detect_resolution = 512, num_images_per_prompt=1):
     input_image = HWC3(input_image)
     img = resize_image(input_image, img_resolution)
     H, W, C = img.shape
@@ -237,7 +237,7 @@ def process_segmentation(input_image, img_resolution, detect_resolution, num_ima
     control = einops.rearrange(control, 'b h w c -> b c h w').clone()
 
 # task = 'bbox'
-def process_bbox(input_image, img_resolution, confidence, nms_thresh, num_images_per_prompt=1):
+def process_bbox(input_image, img_resolution = 512, confidence = 0.4, nms_thresh = 0.5, num_images_per_prompt=1):
     input_image = HWC3(input_image)
     img = resize_image(input_image, img_resolution)
     H, W, C = img.shape
@@ -280,7 +280,7 @@ def process_bbox(input_image, img_resolution, confidence, nms_thresh, num_images
     return control
 
 # task = 'outpainting'
-def process_outpainting(input_image, img_resolution, height_top_extended, height_down_extended, width_left_extended, width_right_extended, num_images_per_prompt=1):
+def process_outpainting(input_image, img_resolution = 512, height_top_extended = 50, height_down_extended = 50, width_left_extended = 50, width_right_extended = 50, num_images_per_prompt=1):
     input_image = HWC3(input_image)
     img = resize_image(input_image, img_resolution)
     H, W, C = img.shape
@@ -296,7 +296,7 @@ def process_outpainting(input_image, img_resolution, height_top_extended, height
     return control
 
 #task = 'inpainting'
-def process_inpainting(input_image, img_resolution, h_ratio_t, h_ratio_d, w_ratio_l, w_ratio_r, num_images_per_prompt=1):
+def process_inpainting(input_image, img_resolution = 512, h_ratio_t = 30, h_ratio_d = 60, w_ratio_l = 30, w_ratio_r = 60, num_images_per_prompt=1):
     input_image = HWC3(input_image)
     img = resize_image(input_image, img_resolution)
     H, W, C = img.shape
@@ -310,7 +310,7 @@ def process_inpainting(input_image, img_resolution, h_ratio_t, h_ratio_d, w_rati
     control = einops.rearrange(control, 'b h w c -> b c h w').clone()
 
 #task = 'grayscale'
-def process_colorization(input_image, img_resolution, num_images_per_prompt=1):
+def process_colorization(input_image, img_resolution = 512, num_images_per_prompt=1):
     input_image = HWC3(input_image)
     img = resize_image(input_image, img_resolution)
     H, W, C = img.shape
@@ -327,7 +327,7 @@ def process_colorization(input_image, img_resolution, num_images_per_prompt=1):
     return control
 
 #task = 'blur'
-def process_deblur(input_image, img_resolution, ksize, num_images_per_prompt=1):
+def process_deblur(input_image, img_resolution = 512, ksize = 51, num_images_per_prompt=1):
     input_image = HWC3(input_image)
     img = resize_image(input_image, img_resolution)
     H, W, C = img.shape
