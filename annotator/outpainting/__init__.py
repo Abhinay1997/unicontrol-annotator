@@ -9,12 +9,17 @@
 import numpy as np
 
 class Outpainter:
-    def __call__(self, img, rand_h, rand_w):
-        h = img.shape[0]
-        w = img.shape[1]
-        h_new = int(float(h) / 100.0 * float(rand_h))
-        w_new = int(float(w) / 100.0 * float(rand_w))
-        img_new = np.zeros(img.shape)
-        img_new[(h-h_new)//2:(h+h_new)//2, (w-w_new)//2:(w+w_new)//2] = img[(h-h_new)//2:(h+h_new)//2, (w-w_new)//2:(w+w_new)//2]
+    def __call__(self, img, height_top_extended, height_down_extended, width_left_extended, width_right_extended):
+        height, width, channel = img.shape
+
+        height_top_new = int(float(height) / 100.0 * float(height_top_extended))
+        height_down_new = int(float(height) / 100.0 * float(height_down_extended))
+        width_left_new = int(float(width) / 100.0 * float(width_left_extended))
+        width_right_new = int(float(width) / 100.0 * float(width_right_extended))
+
+        new_height = height + height_top_new + height_down_new
+        new_width = width + width_left_new + width_right_new
+        img_new = np.zeros([new_height, new_width, channel])
+        img_new[height_top_new: (height + height_top_new), width_left_new: (width + width_left_new), : ] = img
         img_new = img_new.astype('ubyte')
         return img_new
