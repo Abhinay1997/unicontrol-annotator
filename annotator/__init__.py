@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 import cvlib as cv
 
-from util import resize_image, HWC3
+from .util import resize_image, HWC3
 
 from .canny import CannyDetector
 from .midas import MidasDetector
