@@ -113,7 +113,7 @@ color_dict = {
 }
 
 # task = 'canny'
-def process_canny(img, resolution, low_threshold = 40, high_threshold = 200, num_images_per_prompt = 1):
+def process_canny(img, resolution = 512, low_threshold = 40, high_threshold = 200, num_images_per_prompt = 1):
     img = resize_image(HWC3(img), resolution)
     H, W, C = img.shape
 
@@ -123,6 +123,7 @@ def process_canny(img, resolution, low_threshold = 40, high_threshold = 200, num
     control = torch.from_numpy(detected_map.copy()).float()/ 255.0
     control = torch.stack([control for _ in range(num_images_per_prompt)], dim=0)
     control = einops.rearrange(control, 'b h w c -> b c h w').clone()
+    return control
 
 # task = 'hed'
 def process_hed(input_image, img_resolution = 512, hed_resolution = 512, num_images_per_prompt = 1):
