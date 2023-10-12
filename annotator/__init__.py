@@ -265,6 +265,7 @@ def process_segmentation(input_image, img_resolution = 512, detect_resolution = 
     control = torch.from_numpy(detected_map.copy()).float() / 255.0
     control = torch.stack([control for _ in range(num_images_per_prompt)], dim=0)
     control = einops.rearrange(control, 'b h w c -> b c h w').clone()
+    return control
 
 # task = 'bbox'
 def process_bbox(input_image, img_resolution = 512, confidence = 0.4, nms_thresh = 0.5, num_images_per_prompt=1):
@@ -335,9 +336,10 @@ def process_inpainting(input_image, img_resolution = 512, h_ratio_t = 30, h_rati
 
     detected_map = cv2.resize(detected_map, (W, H), interpolation=cv2.INTER_LINEAR)
 
-    control = torch.from_numpy(detected_map.copy()).float().cuda() / 255.0
+    control = torch.from_numpy(detected_map.copy()).float() / 255.0
     control = torch.stack([control for _ in range(num_images_per_prompt)], dim=0)
     control = einops.rearrange(control, 'b h w c -> b c h w').clone()
+    return control
 
 #task = 'grayscale'
 def process_colorization(input_image, img_resolution = 512, num_images_per_prompt=1):
