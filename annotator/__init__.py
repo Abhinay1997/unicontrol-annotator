@@ -17,15 +17,7 @@ from .inpainting import Inpainter
 from .uniformer import UniformerDetector
 
 
-apply_uniformer = UniformerDetector()
-apply_midas = MidasDetector()
-apply_canny = CannyDetector()
-apply_hed = HEDdetector()
-model_outpainting = Outpainter()
-apply_openpose = OpenposeDetector()
-model_grayscale = GrayscaleConverter()
-model_blur = Blurrer()
-model_inpainting = Inpainter()
+
 
 #All functions take img (h,w,c3) as input and return (c,h,w) with values in 0-1.
 color_dict = {
@@ -112,37 +104,10 @@ color_dict = {
     'toothbrush': (160, 96, 96)
 }
 
-def midas(img, res):
-    img = resize_image(HWC3(img), res)
-    results = apply_midas(img)
-    return results
-
-
-def outpainting(img, res, height_top_extended, height_down_extended, width_left_extended, width_right_extended):
-    img = resize_image(HWC3(img), res)
-    result = model_outpainting(img, height_top_extended, height_down_extended, width_left_extended, width_right_extended)
-    return result
-
-
-def grayscale(img, res):
-    img = resize_image(HWC3(img), res)
-    result = model_grayscale(img)
-    return result
-
-
-def blur(img, res, ksize):
-    img = resize_image(HWC3(img), res)
-    result = model_blur(img, ksize)
-    return result
-
-
-def inpainting(img, res, height_top_mask, height_down_mask, width_left_mask, width_right_mask):
-    img = resize_image(HWC3(img), res)
-    result = model_inpainting(img, height_top_mask, height_down_mask, width_left_mask, width_right_mask)
-    return result
 
 # task = 'canny'
 def process_canny(img, resolution = 512, low_threshold = 40, high_threshold = 200, num_images_per_prompt = 1):
+    apply_canny = CannyDetector()
     img = resize_image(HWC3(img), resolution)
     H, W, C = img.shape
 
@@ -156,6 +121,7 @@ def process_canny(img, resolution = 512, low_threshold = 40, high_threshold = 20
 
 # task = 'hed'
 def process_hed(input_image, img_resolution = 512, hed_resolution = 512, num_images_per_prompt = 1):
+    apply_hed = HEDdetector()
     input_image = HWC3(input_image)
     img = resize_image(input_image, img_resolution)
     H, W, C = img.shape
@@ -171,6 +137,7 @@ def process_hed(input_image, img_resolution = 512, hed_resolution = 512, num_ima
 
 #task = 'hedsketch'
 def process_sketch(input_image, img_resolution = 512, detect_resolution = 512, num_images_per_prompt=1):
+    apply_hed = HEDdetector()
     input_image = HWC3(input_image)
     img = resize_image(input_image, img_resolution)
     H, W, C = img.shape
@@ -206,6 +173,7 @@ def process_sketch(input_image, img_resolution = 512, detect_resolution = 512, n
 
 # task = 'depth'
 def process_depth(input_image, img_resolution = 512, detect_resolution = 384, num_images_per_prompt=1):
+    apply_midas = MidasDetector()
     input_image = HWC3(input_image)
     img = resize_image(input_image, img_resolution)
     H, W, C = img.shape
@@ -222,6 +190,7 @@ def process_depth(input_image, img_resolution = 512, detect_resolution = 384, nu
 
 # task = 'normal'
 def process_normal(input_image, img_resolution = 512, detect_resolution = 384, num_images_per_prompt=1):
+    apply_midas = MidasDetector()
     input_image = HWC3(input_image)
     img = resize_image(input_image, img_resolution)
     H, W, C = img.shape
@@ -238,6 +207,7 @@ def process_normal(input_image, img_resolution = 512, detect_resolution = 384, n
 
 # task = 'openpose'
 def process_pose(input_image, img_resolution = 512, detect_resolution = 512, num_images_per_prompt=1):
+    apply_openpose = OpenposeDetector()
     input_image = HWC3(input_image)
     img = resize_image(input_image, img_resolution)
     H, W, C = img.shape
@@ -254,6 +224,7 @@ def process_pose(input_image, img_resolution = 512, detect_resolution = 512, num
 
 # task = 'seg'
 def process_segmentation(input_image, img_resolution = 512, detect_resolution = 512, num_images_per_prompt=1):
+    apply_uniformer = UniformerDetector()
     input_image = HWC3(input_image)
     img = resize_image(input_image, img_resolution)
     H, W, C = img.shape
@@ -312,6 +283,7 @@ def process_bbox(input_image, img_resolution = 512, confidence = 0.4, nms_thresh
 
 # task = 'outpainting'
 def process_outpainting(input_image, img_resolution = 512, height_top_extended = 50, height_down_extended = 50, width_left_extended = 50, width_right_extended = 50, num_images_per_prompt=1):
+    model_outpainting = Outpainter()
     input_image = HWC3(input_image)
     img = resize_image(input_image, img_resolution)
     H, W, C = img.shape
@@ -328,6 +300,7 @@ def process_outpainting(input_image, img_resolution = 512, height_top_extended =
 
 #task = 'inpainting'
 def process_inpainting(input_image, img_resolution = 512, h_ratio_t = 30, h_ratio_d = 60, w_ratio_l = 30, w_ratio_r = 60, num_images_per_prompt=1):
+    model_inpainting = Inpainter()
     input_image = HWC3(input_image)
     img = resize_image(input_image, img_resolution)
     H, W, C = img.shape
@@ -343,6 +316,7 @@ def process_inpainting(input_image, img_resolution = 512, h_ratio_t = 30, h_rati
 
 #task = 'grayscale'
 def process_colorization(input_image, img_resolution = 512, num_images_per_prompt=1):
+    model_grayscale = GrayscaleConverter()
     input_image = HWC3(input_image)
     img = resize_image(input_image, img_resolution)
     H, W, C = img.shape
@@ -360,6 +334,7 @@ def process_colorization(input_image, img_resolution = 512, num_images_per_promp
 
 #task = 'blur'
 def process_deblur(input_image, img_resolution = 512, ksize = 51, num_images_per_prompt=1):
+    model_blur = Blurrer()
     input_image = HWC3(input_image)
     img = resize_image(input_image, img_resolution)
     H, W, C = img.shape
@@ -374,5 +349,32 @@ def process_deblur(input_image, img_resolution = 512, ksize = 51, num_images_per
 
     return control
 
+def midas(img, res):
+    img = resize_image(HWC3(img), res)
+    results = apply_midas(img)
+    return results
 
+
+def outpainting(img, res, height_top_extended, height_down_extended, width_left_extended, width_right_extended):
+    img = resize_image(HWC3(img), res)
+    result = model_outpainting(img, height_top_extended, height_down_extended, width_left_extended, width_right_extended)
+    return result
+
+
+def grayscale(img, res):
+    img = resize_image(HWC3(img), res)
+    result = model_grayscale(img)
+    return result
+
+
+def blur(img, res, ksize):
+    img = resize_image(HWC3(img), res)
+    result = model_blur(img, ksize)
+    return result
+
+
+def inpainting(img, res, height_top_mask, height_down_mask, width_left_mask, width_right_mask):
+    img = resize_image(HWC3(img), res)
+    result = model_inpainting(img, height_top_mask, height_down_mask, width_left_mask, width_right_mask)
+    return result
 
