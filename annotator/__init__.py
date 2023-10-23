@@ -142,26 +142,30 @@ def inpainting(img, res, height_top_mask, height_down_mask, width_left_mask, wid
     return result
 
 # task = 'canny'
-def process_canny(img, resolution = 512, low_threshold = 40, high_threshold = 200, num_images_per_prompt = 1):
+def process_canny(img, cond_extract=True, resolution = 512, low_threshold = 40, high_threshold = 200, num_images_per_prompt = 1):
     img = resize_image(HWC3(img), resolution)
     H, W, C = img.shape
-
-    detected_map = apply_canny(img, low_threshold, high_threshold)
-    detected_map = HWC3(detected_map)
-
+    if cond_extract == True:
+        detected_map = apply_canny(img, low_threshold, high_threshold)
+        detected_map = HWC3(detected_map)
+    else:
+        detected_map = 255 - img
+        
     control = torch.from_numpy(detected_map.copy()).float()/ 255.0
     control = torch.stack([control for _ in range(num_images_per_prompt)], dim=0)
     control = einops.rearrange(control, 'b h w c -> b c h w').clone()
     return control
 
 # task = 'hed'
-def process_hed(input_image, img_resolution = 512, hed_resolution = 512, num_images_per_prompt = 1):
+def process_hed(input_image, cond_extract=True, img_resolution = 512, hed_resolution = 512, num_images_per_prompt = 1):
     input_image = HWC3(input_image)
     img = resize_image(input_image, img_resolution)
     H, W, C = img.shape
-
-    detected_map = apply_hed(resize_image(input_image, hed_resolution))
-    detected_map = HWC3(detected_map)
+    if cond_extract == True:
+        detected_map = apply_hed(resize_image(input_image, hed_resolution))
+        detected_map = HWC3(detected_map)
+    else:
+        detected_map = img
     detected_map = cv2.resize(detected_map, (W, H), interpolation=cv2.INTER_LINEAR)
 
     control = torch.from_numpy(detected_map.copy()).float() / 255.0
@@ -170,31 +174,33 @@ def process_hed(input_image, img_resolution = 512, hed_resolution = 512, num_ima
     return control
 
 #task = 'hedsketch'
-def process_sketch(input_image, img_resolution = 512, detect_resolution = 512, num_images_per_prompt=1):
+def process_sketch(input_image, cond_extract=True, img_resolution = 512, detect_resolution = 512, num_images_per_prompt=1):
     input_image = HWC3(input_image)
     img = resize_image(input_image, img_resolution)
     H, W, C = img.shape
-
-    detected_map = apply_hed(resize_image(input_image, detect_resolution))
-    detected_map = HWC3(detected_map)
-
-    # sketch the hed image
-    retry = 0
-    cnt = 0
-    while retry == 0:
-        threshold_value = np.random.randint(110, 160)
-        kernel_size = 3
-        alpha = 1.5
-        beta = 50
-        binary_image = cv2.threshold(detected_map, threshold_value, 255, cv2.THRESH_BINARY)[1]
-        inverted_image = cv2.bitwise_not(binary_image)
-        smoothed_image = cv2.GaussianBlur(inverted_image, (kernel_size, kernel_size), 0)
-        sketch_image = cv2.convertScaleAbs(smoothed_image, alpha=alpha, beta=beta)
-        if np.sum(sketch_image < 5) > 0.005 * sketch_image.shape[0] * sketch_image.shape[1] or cnt == 5:
-            retry = 1
-        else:
-            cnt += 1
-    detected_map = sketch_image
+    if cond_extract == True:
+        detected_map = apply_hed(resize_image(input_image, detect_resolution))
+        detected_map = HWC3(detected_map)
+    
+        # sketch the hed image
+        retry = 0
+        cnt = 0
+        while retry == 0:
+            threshold_value = np.random.randint(110, 160)
+            kernel_size = 3
+            alpha = 1.5
+            beta = 50
+            binary_image = cv2.threshold(detected_map, threshold_value, 255, cv2.THRESH_BINARY)[1]
+            inverted_image = cv2.bitwise_not(binary_image)
+            smoothed_image = cv2.GaussianBlur(inverted_image, (kernel_size, kernel_size), 0)
+            sketch_image = cv2.convertScaleAbs(smoothed_image, alpha=alpha, beta=beta)
+            if np.sum(sketch_image < 5) > 0.005 * sketch_image.shape[0] * sketch_image.shape[1] or cnt == 5:
+                retry = 1
+            else:
+                cnt += 1
+        detected_map = sketch_image
+    else:
+        detected_map = img
 
     detected_map = cv2.resize(detected_map, (W, H), interpolation=cv2.INTER_LINEAR)
 
@@ -205,13 +211,16 @@ def process_sketch(input_image, img_resolution = 512, detect_resolution = 512, n
     return control
 
 # task = 'depth'
-def process_depth(input_image, img_resolution = 512, detect_resolution = 384, num_images_per_prompt=1):
+def process_depth(input_image, cond_extract=True, img_resolution = 512, detect_resolution = 384, num_images_per_prompt=1):
     input_image = HWC3(input_image)
     img = resize_image(input_image, img_resolution)
     H, W, C = img.shape
 
-    detected_map, _ = apply_midas(resize_image(input_image, detect_resolution))
-    detected_map = HWC3(detected_map)
+    if cond_extract==True:
+        detected_map, _ = apply_midas(resize_image(input_image, detect_resolution))
+        detected_map = HWC3(detected_map)
+    else:
+        detected_map = img
 
     detected_map = cv2.resize(detected_map, (W, H), interpolation=cv2.INTER_LINEAR)
 
@@ -221,13 +230,16 @@ def process_depth(input_image, img_resolution = 512, detect_resolution = 384, nu
     return control
 
 # task = 'normal'
-def process_normal(input_image, img_resolution = 512, detect_resolution = 384, num_images_per_prompt=1):
+def process_normal(input_image, cond_extract=True, img_resolution = 512, detect_resolution = 384, num_images_per_prompt=1):
     input_image = HWC3(input_image)
     img = resize_image(input_image, img_resolution)
     H, W, C = img.shape
-    
-    _, detected_map = apply_midas(resize_image(input_image, detect_resolution))
-    detected_map = HWC3(detected_map)
+
+    if cond_extract == True:
+        _, detected_map = apply_midas(resize_image(input_image, detect_resolution))
+        detected_map = HWC3(detected_map)
+    else:
+        detected_map = img
 
     detected_map = cv2.resize(detected_map, (W, H), interpolation=cv2.INTER_LINEAR)
 
@@ -237,13 +249,16 @@ def process_normal(input_image, img_resolution = 512, detect_resolution = 384, n
     return control
 
 # task = 'openpose'
-def process_pose(input_image, img_resolution = 512, detect_resolution = 512, num_images_per_prompt=1):
+def process_pose(input_image, cond_extract=True, img_resolution = 512, detect_resolution = 512, num_images_per_prompt=1):
     input_image = HWC3(input_image)
     img = resize_image(input_image, img_resolution)
     H, W, C = img.shape
-
-    detected_map, _ = apply_openpose(resize_image(input_image, detect_resolution))
-    detected_map = HWC3(detected_map)
+    
+    if cond_extract==True:
+        detected_map, _ = apply_openpose(resize_image(input_image, detect_resolution))
+        detected_map = HWC3(detected_map)
+    else:
+        detected_map = img
 
     detected_map = cv2.resize(detected_map, (W, H), interpolation=cv2.INTER_NEAREST)
 
@@ -253,12 +268,14 @@ def process_pose(input_image, img_resolution = 512, detect_resolution = 512, num
     return control
 
 # task = 'seg'
-def process_segmentation(input_image, img_resolution = 512, detect_resolution = 512, num_images_per_prompt=1):
+def process_segmentation(input_image, cond_extract=True, img_resolution = 512, detect_resolution = 512, num_images_per_prompt=1):
     input_image = HWC3(input_image)
     img = resize_image(input_image, img_resolution)
     H, W, C = img.shape
-
-    detected_map = apply_uniformer(resize_image(input_image, detect_resolution))
+    if cond_extract==True:
+        detected_map = apply_uniformer(resize_image(input_image, detect_resolution))
+    else:
+        detected_map = img
 
     detected_map = cv2.resize(detected_map, (W, H), interpolation=cv2.INTER_NEAREST)
 
@@ -268,41 +285,43 @@ def process_segmentation(input_image, img_resolution = 512, detect_resolution = 
     return control
 
 # task = 'bbox'
-def process_bbox(input_image, img_resolution = 512, confidence = 0.4, nms_thresh = 0.5, num_images_per_prompt=1):
+def process_bbox(input_image, cond_extract=True, img_resolution = 512, confidence = 0.4, nms_thresh = 0.5, num_images_per_prompt=1):
     input_image = HWC3(input_image)
     img = resize_image(input_image, img_resolution)
     H, W, C = img.shape
-
-    bbox, label, conf = cv.detect_common_objects(input_image, confidence=confidence, nms_thresh=nms_thresh)
-    mask = np.zeros((input_image.shape), np.uint8)
-    if len(bbox) > 0:
-        order_area = np.zeros(len(bbox))
-
-        area_all = 0
-        for idx_mask, box in enumerate(bbox):
-            x_1, y_1, x_2, y_2 = box
-
-            x_1 = 0 if x_1 < 0 else x_1
-            y_1 = 0 if y_1 < 0 else y_1
-            x_2 = input_image.shape[1] if x_2 < 0 else x_2
-            y_2 = input_image.shape[0] if y_2 < 0 else y_2
-
-            area = (x_2 - x_1) * (y_2 - y_1)
-            order_area[idx_mask] = area
-            area_all += area
-        ordered_area = np.argsort(-order_area)
-
-        for idx_mask in ordered_area:
-            box = bbox[idx_mask]
-            x_1, y_1, x_2, y_2 = box
-            x_1 = 0 if x_1 < 0 else x_1
-            y_1 = 0 if y_1 < 0 else y_1
-            x_2 = input_image.shape[1] if x_2 < 0 else x_2
-            y_2 = input_image.shape[0] if y_2 < 0 else y_2
-
-            mask[y_1:y_2, x_1:x_2, :] = color_dict[label[idx_mask]]
+    if cond_extract==True:
+        bbox, label, conf = cv.detect_common_objects(input_image, confidence=confidence, nms_thresh=nms_thresh)
+        mask = np.zeros((input_image.shape), np.uint8)
+        if len(bbox) > 0:
+            order_area = np.zeros(len(bbox))
     
-    detected_map = mask
+            area_all = 0
+            for idx_mask, box in enumerate(bbox):
+                x_1, y_1, x_2, y_2 = box
+    
+                x_1 = 0 if x_1 < 0 else x_1
+                y_1 = 0 if y_1 < 0 else y_1
+                x_2 = input_image.shape[1] if x_2 < 0 else x_2
+                y_2 = input_image.shape[0] if y_2 < 0 else y_2
+    
+                area = (x_2 - x_1) * (y_2 - y_1)
+                order_area[idx_mask] = area
+                area_all += area
+            ordered_area = np.argsort(-order_area)
+    
+            for idx_mask in ordered_area:
+                box = bbox[idx_mask]
+                x_1, y_1, x_2, y_2 = box
+                x_1 = 0 if x_1 < 0 else x_1
+                y_1 = 0 if y_1 < 0 else y_1
+                x_2 = input_image.shape[1] if x_2 < 0 else x_2
+                y_2 = input_image.shape[0] if y_2 < 0 else y_2
+    
+                mask[y_1:y_2, x_1:x_2, :] = color_dict[label[idx_mask]]
+        
+        detected_map = mask
+    else:
+        detected_map = img
     detected_map = cv2.resize(detected_map, (W, H), interpolation=cv2.INTER_LINEAR)
 
     control = torch.from_numpy(detected_map.copy()).float() / 255.0
@@ -311,13 +330,15 @@ def process_bbox(input_image, img_resolution = 512, confidence = 0.4, nms_thresh
     return control
 
 # task = 'outpainting'
-def process_outpainting(input_image, img_resolution = 512, height_top_extended = 50, height_down_extended = 50, width_left_extended = 50, width_right_extended = 50, num_images_per_prompt=1):
+def process_outpainting(input_image, cond_extract=True, img_resolution = 512, height_top_extended = 50, height_down_extended = 50, width_left_extended = 50, width_right_extended = 50, num_images_per_prompt=1):
     input_image = HWC3(input_image)
     img = resize_image(input_image, img_resolution)
     H, W, C = img.shape
 
-    detected_map = outpainting(input_image, img_resolution, height_top_extended, height_down_extended, width_left_extended, width_right_extended)
-
+    if cond_extract == True:
+        detected_map = outpainting(input_image, img_resolution, height_top_extended, height_down_extended, width_left_extended, width_right_extended)
+    else:
+        detected_map = img
     detected_map = cv2.resize(detected_map, (W, H), interpolation=cv2.INTER_LINEAR)
 
     control = torch.from_numpy(detected_map.copy()).float() / 255.0
@@ -327,12 +348,14 @@ def process_outpainting(input_image, img_resolution = 512, height_top_extended =
     return control
 
 #task = 'inpainting'
-def process_inpainting(input_image, img_resolution = 512, h_ratio_t = 30, h_ratio_d = 60, w_ratio_l = 30, w_ratio_r = 60, num_images_per_prompt=1):
+def process_inpainting(input_image, cond_extract=True, img_resolution = 512, h_ratio_t = 30, h_ratio_d = 60, w_ratio_l = 30, w_ratio_r = 60, num_images_per_prompt=1):
     input_image = HWC3(input_image)
     img = resize_image(input_image, img_resolution)
     H, W, C = img.shape
-
-    detected_map = inpainting(input_image, img_resolution, h_ratio_t, h_ratio_d, w_ratio_l, w_ratio_r)
+    if cond_extract == True:
+        detected_map = inpainting(input_image, img_resolution, h_ratio_t, h_ratio_d, w_ratio_l, w_ratio_r)
+    else:
+        detected_map = img
 
     detected_map = cv2.resize(detected_map, (W, H), interpolation=cv2.INTER_LINEAR)
 
@@ -342,15 +365,17 @@ def process_inpainting(input_image, img_resolution = 512, h_ratio_t = 30, h_rati
     return control
 
 #task = 'grayscale'
-def process_colorization(input_image, img_resolution = 512, num_images_per_prompt=1):
+def process_colorization(input_image, cond_extract=True, img_resolution = 512, num_images_per_prompt=1):
     input_image = HWC3(input_image)
     img = resize_image(input_image, img_resolution)
     H, W, C = img.shape
-
-    detected_map = grayscale(input_image, img_resolution)
-    detected_map = cv2.resize(detected_map, (W, H), interpolation=cv2.INTER_LINEAR)
-    detected_map = detected_map[:, :, np.newaxis]
-    detected_map = detected_map.repeat(3, axis=2)
+    if cond_extract==True:
+        detected_map = grayscale(input_image, img_resolution)
+        detected_map = cv2.resize(detected_map, (W, H), interpolation=cv2.INTER_LINEAR)
+        detected_map = detected_map[:, :, np.newaxis]
+        detected_map = detected_map.repeat(3, axis=2)
+    else:
+        detected_map = img
 
     control = torch.from_numpy(detected_map.copy()).float() / 255.0
     control = torch.stack([control for _ in range(num_images_per_prompt)], dim=0)
@@ -359,12 +384,14 @@ def process_colorization(input_image, img_resolution = 512, num_images_per_promp
     return control
 
 #task = 'blur'
-def process_deblur(input_image, img_resolution = 512, ksize = 51, num_images_per_prompt=1):
+def process_deblur(input_image, cond_extract=True, img_resolution = 512, ksize = 51, num_images_per_prompt=1):
     input_image = HWC3(input_image)
     img = resize_image(input_image, img_resolution)
     H, W, C = img.shape
-
-    detected_map = blur(input_image, img_resolution, ksize)
+    if cond_extract == True:
+        detected_map = blur(input_image, img_resolution, ksize)
+    else:
+        detected_map = img
 
     detected_map = cv2.resize(detected_map, (W, H), interpolation=cv2.INTER_LINEAR)
 
