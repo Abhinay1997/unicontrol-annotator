@@ -306,7 +306,7 @@ def process_outpainting(input_image, cond_extract=True, img_resolution = 512, he
     H, W, C = img.shape
 
     if cond_extract == True:
-        detected_map = outpainting(input_image, img_resolution, height_top_extended, height_down_extended, width_left_extended, width_right_extended)
+        detected_map = model_outpainting(input_image, img_resolution, height_top_extended, height_down_extended, width_left_extended, width_right_extended)
     else:
         detected_map = img
     detected_map = cv2.resize(detected_map, (W, H), interpolation=cv2.INTER_LINEAR)
