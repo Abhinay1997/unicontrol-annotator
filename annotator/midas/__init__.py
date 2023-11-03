@@ -22,9 +22,9 @@ from .api import MiDaSInference
 
 class MidasDetector:
     def __init__(self):
-        self.model = MiDaSInference(model_type="dpt_large").cuda()
+        self.model = MiDaSInference(model_type="dpt_hybrid").cuda()
 
-    def __call__(self, input_image, a=np.pi * 0.2, bg_th=0.02):
+    def __call__(self, input_image, a=np.pi * 2.0, bg_th=0.1):
         assert input_image.ndim == 3
         image_depth = input_image
         with torch.no_grad():
