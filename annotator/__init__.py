@@ -102,34 +102,6 @@ color_dict = {
     'toothbrush': (160, 96, 96)
 }
 
-def midas(img, res):
-    img = resize_image(HWC3(img), res)
-    results = apply_midas(img)
-    return results
-
-
-def outpainting(img, res, height_top_extended, height_down_extended, width_left_extended, width_right_extended):
-    img = resize_image(HWC3(img), res)
-    result = model_outpainting(img, height_top_extended, height_down_extended, width_left_extended, width_right_extended)
-    return result
-
-
-def grayscale(img, res):
-    img = resize_image(HWC3(img), res)
-    result = model_grayscale(img)
-    return result
-
-
-def blur(img, res, ksize):
-    img = resize_image(HWC3(img), res)
-    result = model_blur(img, ksize)
-    return result
-
-
-def inpainting(img, res, height_top_mask, height_down_mask, width_left_mask, width_right_mask):
-    img = resize_image(HWC3(img), res)
-    result = model_inpainting(img, height_top_mask, height_down_mask, width_left_mask, width_right_mask)
-    return result
 
 # task = 'canny'
 def process_canny(img, cond_extract=True, resolution = 512, low_threshold = 40, high_threshold = 200, num_images_per_prompt = 1):
@@ -404,3 +376,31 @@ def process_deblur(input_image, cond_extract=True, img_resolution = 512, ksize =
 
 
 
+def midas(img, res):
+    img = resize_image(HWC3(img), res)
+    results = apply_midas(img)
+    return results
+
+
+def outpainting(img, res, height_top_extended, height_down_extended, width_left_extended, width_right_extended):
+    img = resize_image(HWC3(img), res)
+    result = model_outpainting(img, height_top_extended, height_down_extended, width_left_extended, width_right_extended)
+    return result
+
+
+def grayscale(img, res):
+    img = resize_image(HWC3(img), res)
+    result = model_grayscale(img)
+    return result
+
+
+def blur(img, res, ksize):
+    img = resize_image(HWC3(img), res)
+    result = model_blur(img, ksize)
+    return result
+
+
+def inpainting(img, res, height_top_mask, height_down_mask, width_left_mask, width_right_mask):
+    img = resize_image(HWC3(img), res)
+    result = model_inpainting(img, height_top_mask, height_down_mask, width_left_mask, width_right_mask)
+    return result
