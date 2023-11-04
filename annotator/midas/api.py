@@ -30,8 +30,8 @@ ISL_PATHS = {
     "midas_v21_small": "",
 }
 
-# remote_model_path = "https://huggingface.co/lllyasviel/ControlNet/resolve/main/annotator/ckpts/dpt_hybrid-midas-501f0c75.pt"
-remote_model_path = "https://storage.googleapis.com/sfr-unicontrol-data-research/annotator/ckpts/dpt_large_384.pt"
+remote_model_path = "https://huggingface.co/lllyasviel/ControlNet/resolve/main/annotator/ckpts/dpt_hybrid-midas-501f0c75.pt"
+# remote_model_path = "https://storage.googleapis.com/sfr-unicontrol-data-research/annotator/ckpts/dpt_large_384.pt"
 
 def disabled_train(self, mode=True):
     """Overwrite model.train with this function to make sure train/eval mode

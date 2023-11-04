@@ -306,7 +306,7 @@ def process_outpainting(input_image, cond_extract=True, img_resolution = 512, he
     H, W, C = img.shape
 
     if cond_extract == True:
-        detected_map = model_outpainting(input_image, img_resolution, height_top_extended, height_down_extended, width_left_extended, width_right_extended)
+        detected_map = outpainting(input_image, img_resolution, height_top_extended, height_down_extended, width_left_extended, width_right_extended)
     else:
         detected_map = img
     detected_map = cv2.resize(detected_map, (W, H), interpolation=cv2.INTER_LINEAR)
@@ -374,6 +374,8 @@ def process_deblur(input_image, cond_extract=True, img_resolution = 512, ksize =
 
     return control
 
+
+
 def midas(img, res):
     img = resize_image(HWC3(img), res)
     results = apply_midas(img)
@@ -402,4 +404,3 @@ def inpainting(img, res, height_top_mask, height_down_mask, width_left_mask, wid
     img = resize_image(HWC3(img), res)
     result = model_inpainting(img, height_top_mask, height_down_mask, width_left_mask, width_right_mask)
     return result
-
