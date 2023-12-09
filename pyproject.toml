@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "unicontrol-annotator"
+version = "0.1.0"
+description = "Annotator utility for pre-processing the images to be used for conditioning in the UniControl diffusion model."
+authors = ["Can Qin <canqinn@gmail.com>"]
+license = "apache-2.0"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.10,<3.12"
+einops = "^0.7.0"
+opencv-contrib-python = "4.7.0.72"
+cvlib = "0.2.7"
+yapf = "^0.40.2"
+timm = "^0.9.12"
+basicsr = "^1.4.2"
+addict = "^2.4.0"
+tensorflow-cpu = "2.14.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
