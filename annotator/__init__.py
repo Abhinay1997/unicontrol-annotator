@@ -306,7 +306,7 @@ def process_outpainting(input_image, cond_extract=True, img_resolution = 512, he
     H, W, C = img.shape
 
     if cond_extract == True:
-        detected_map = outpainting(input_image, img_resolution, height_top_extended, height_down_extended, width_left_extended, width_right_extended)
+        detected_map = outpainting(input_image, img_resolution, height_top_extended, height_down_extended, width_left_extended, width_right_extended, model_outpainting=model_outpainting)
     else:
         detected_map = img
     detected_map = cv2.resize(detected_map, (W, H), interpolation=cv2.INTER_LINEAR)
@@ -324,7 +324,7 @@ def process_inpainting(input_image, cond_extract=True, img_resolution = 512, h_r
     img = resize_image(input_image, img_resolution)
     H, W, C = img.shape
     if cond_extract == True:
-        detected_map = inpainting(input_image, img_resolution, h_ratio_t, h_ratio_d, w_ratio_l, w_ratio_r)
+        detected_map = inpainting(input_image, img_resolution, h_ratio_t, h_ratio_d, w_ratio_l, w_ratio_r, model_inpainting=model_inpainting)
     else:
         detected_map = img
 
@@ -342,7 +342,7 @@ def process_colorization(input_image, cond_extract=True, img_resolution = 512, n
     img = resize_image(input_image, img_resolution)
     H, W, C = img.shape
     if cond_extract==True:
-        detected_map = grayscale(input_image, img_resolution)
+        detected_map = grayscale(input_image, img_resolution, model_grayscale=model_grayscale)
         detected_map = cv2.resize(detected_map, (W, H), interpolation=cv2.INTER_LINEAR)
         detected_map = detected_map[:, :, np.newaxis]
         detected_map = detected_map.repeat(3, axis=2)
@@ -362,7 +362,7 @@ def process_deblur(input_image, cond_extract=True, img_resolution = 512, ksize =
     img = resize_image(input_image, img_resolution)
     H, W, C = img.shape
     if cond_extract == True:
-        detected_map = blur(input_image, img_resolution, ksize)
+        detected_map = blur(input_image, img_resolution, ksize, model_blur=model_blur)
     else:
         detected_map = img
 
@@ -382,25 +382,25 @@ def midas(img, res):
     return results
 
 
-def outpainting(img, res, height_top_extended, height_down_extended, width_left_extended, width_right_extended):
+def outpainting(img, res, height_top_extended, height_down_extended, width_left_extended, width_right_extended, model_outpainting):
     img = resize_image(HWC3(img), res)
     result = model_outpainting(img, height_top_extended, height_down_extended, width_left_extended, width_right_extended)
     return result
 
 
-def grayscale(img, res):
+def grayscale(img, res, model_grayscale):
     img = resize_image(HWC3(img), res)
     result = model_grayscale(img)
     return result
 
 
-def blur(img, res, ksize):
+def blur(img, res, ksize, model_blur):
     img = resize_image(HWC3(img), res)
     result = model_blur(img, ksize)
     return result
 
 
-def inpainting(img, res, height_top_mask, height_down_mask, width_left_mask, width_right_mask):
+def inpainting(img, res, height_top_mask, height_down_mask, width_left_mask, width_right_mask, model_inpainting):
     img = resize_image(HWC3(img), res)
     result = model_inpainting(img, height_top_mask, height_down_mask, width_left_mask, width_right_mask)
     return result
